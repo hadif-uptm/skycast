@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Weather Widget | Glass Card + Live Clock</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+	  
+    body {
+  background: url('day-heavenly-space-scene-fluffy.jpg') no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+	  
+    /* Main container – now same width as the card */
+    .weather-app {
+      max-width: 700px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    /* Search bar – naturally inherits width from parent */
+    .search-container {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+      border-radius: 3rem;
+      padding: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .search-container:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.45);
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.2);
+    }
+    .search-container input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 0.9rem 1.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      color: #1e2f3e;
+      font-family: 'Inter', sans-serif;
+    }
+    .search-container input::placeholder { color: #4a6a85; font-weight: 400; }
+    .search-container button {
+      background: linear-gradient(135deg, #36cfff, #a020f0);
+      border: none;
+      border-radius: 2.5rem;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: white;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-container button:hover {
+      transform: scale(0.96);
+      background: linear-gradient(135deg, #2bb5e0, #8a1acf);
+    }
+
+    /* Glass card – no hover animation, width now controlled by parent */
+    .weather-card {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      overflow: hidden;
+    }
+    .card-inner { padding: 1.8rem 2rem 2rem; }
+
+    /* Rest of the styles (location, stats, hourly, etc.) – unchanged */
+    .location-time {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: #1e2f3e;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+      padding: 0.3rem 1rem 0.3rem 0.8rem;
+      border-radius: 40px;
+    }
+    .time-badge {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+      padding: 0.35rem 1rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #1e2f3e;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .temp-highlow {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(100,120,140,0.2);
+      padding-bottom: 0.8rem;
+    }
+    .current-temp-box { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; }
+    .main-temp {
+      font-size: 4.3rem;
+      font-weight: 700;
+      letter-spacing: -2px;
+      color: #1e3b4f;
+      line-height: 1;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.3);
+    }
+    .highlow {
+      display: flex;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(4px);
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+    .highlow span { display: flex; align-items: center; gap: 5px; font-size: 0.95rem; color: #2c4c6e; }
+    .real-feel-note {
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(4px);
+      border-radius: 60px;
+      padding: 0.2rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1d5e8f;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .stats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0 1.8rem;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px);
+      border-radius: 1.8rem;
+      padding: 1rem 1.2rem;
+    }
+    .stat-item { flex: 1 1 calc(50% - 1rem); min-width: 140px; display: flex; align-items: center; gap: 0.9rem; }
+    .stat-icon {
+      width: 2.4rem; height: 2.4rem; background: rgba(255,255,255,0.7);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: #2f6d9c; font-size: 1.1rem;
+    }
+    .stat-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; color: #2c4c6e; }
+    .stat-value { font-size: 1.2rem; font-weight: 700; color: #1e3b4f; }
+    .unit-sub { font-size: 0.7rem; font-weight: 500; margin-left: 2px; }
+    .hourly-section { margin-top: 0.5rem; }
+    .hourly-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #2b5c7c;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .hourly-scroll {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(4px);
+      border-radius: 1.6rem;
+      padding: 0.5rem;
+      justify-content: center;
+    }
+    .hour-item {
+      flex: 1 1 calc(25% - 0.75rem);
+      min-width: 70px;
+      text-align: center;
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(4px);
+      border-radius: 1.5rem;
+      padding: 0.75rem 0.3rem;
+      transition: all 0.2s;
+    }
+    .hour-item:hover { background: rgba(255,255,255,0.6); transform: scale(0.97); }
+    .hour-time { font-weight: 700; font-size: 0.85rem; color: #2c5c7c; margin-bottom: 0.4rem; }
+    .hour-temp { font-weight: 700; font-size: 1.2rem; color: #1e3b4f; display: flex; align-items: center; justify-content: center; gap: 2px; }
+    .divider-light { height: 1px; background: linear-gradient(to right, #cbdbe4, transparent); margin: 0.5rem 0 1rem; }
+    .extra-note { font-size: 0.65rem; text-align: center; color: #2c5c7c; margin-top: 1rem; display: flex; justify-content: center; gap: 1rem; }
+    .loading-spinner {
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      color: #1d5e8f;
+      background: rgba(255,255,240,0.5);
+      backdrop-filter: blur(4px);
+      border-radius: 60px;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    @media (max-width: 550px) {
+      .card-inner { padding: 1.4rem; }
+      .main-temp { font-size: 3.2rem; }
+      .stats-grid { gap: 0.8rem; padding: 0.9rem; }
+      .stat-value { font-size: 1rem; }
+      .hourly-scroll { gap: 0.5rem; }
+      .hour-temp { font-size: 1rem; }
+      .highlow span { font-size: 0.75rem; }
+      .search-container input { padding: 0.6rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="weather-app">
+  <div class="search-container">
+    <input type="text" id="cityInput" placeholder="Search city..." value="New York">
+  </div>
+  <div class="weather-card">
+    <div class="card-inner">
+      <div class="location-time">
+        <div class="location"><i class="fas fa-map-marker-alt"></i><span id="cityDisplay">New York, US</span></div>
+        <div class="time-badge"><i class="far fa-clock"></i><span id="timeDisplaySpan">--:--:--</span></div>
+      </div>
+      <div class="temp-highlow">
+        <div class="current-temp-box">
+          <div class="main-temp" id="mainTemp">--°C</div>
+          <div class="highlow" id="highLowBlock"><span><i class="fas fa-arrow-up"></i> --°</span><span><i class="fas fa-arrow-down"></i> --°</span></div>
+        </div>
+        <div class="real-feel-note" id="feelsLikeNote"><i class="fas fa-thermometer-half"></i> Feels like --°</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-temperature-high"></i></div><div class="stat-info"><div class="stat-label">TEMPERATURE</div><div class="stat-value" id="realTemp">--<span class="unit-sub">°C</span></div></div></div>
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-cloud-rain"></i></div><div class="stat-info"><div class="stat-label">RAIN CHANCE</div><div class="stat-value" id="rainChance">--<span class="unit-sub">%</span></div></div></div>
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-wind"></i></div><div class="stat-info"><div class="stat-label">WIND SPEED</div><div class="stat-value" id="windSpeed">--<span class="unit-sub"> Km/h</span></div></div></div>
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-tint"></i></div><div class="stat-info"><div class="stat-label">HUMIDITY</div><div class="stat-value" id="humidityVal">--<span class="unit-sub">%</span></div></div></div>
+      </div>
+      <div class="hourly-section">
+        <div class="hourly-title"><i class="fas fa-calendar-day"></i>
+			<span><b>Hourly forecast</b></span></div>
+        <div class="hourly-scroll" id="hourlyContainer"></div>
+      </div>
+      <div class="divider-light"></div>
+    </div>
+  </div>
+  <div id="loadingMsg" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Fetching weather...</div>
+</div>
+
+<script>
+  // (JavaScript unchanged – same as the last working version)
+  (function() {
+    var API_KEY = "0b60566d1ac75f8b3ae47bd8853c82e9";
+    var WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
+    var FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast";
+    var REFRESH_INTERVAL_MS = 30000;
+
+    var refreshTimer = null;
+    var animationId = null;
+    var currentOffset = null;
+    var currentCityName = "New York";
+
+    var cityInput = document.getElementById('cityInput');
+    var searchBtn = document.getElementById('searchBtn');
+    var loadingDiv = document.getElementById('loadingMsg');
+    var cityDisplay = document.getElementById('cityDisplay');
+    var timeDisplaySpan = document.getElementById('timeDisplaySpan');
+    var mainTempEl = document.getElementById('mainTemp');
+    var highLowBlock = document.getElementById('highLowBlock');
+    var feelsLikeNote = document.getElementById('feelsLikeNote');
+    var realTempEl = document.getElementById('realTemp');
+    var rainChanceEl = document.getElementById('rainChance');
+    var windSpeedEl = document.getElementById('windSpeed');
+    var humidityEl = document.getElementById('humidityVal');
+    var hourlyContainer = document.getElementById('hourlyContainer');
+    var uvNote = document.getElementById('uvNote');
+    var visibilityNote = document.getElementById('visibilityNote');
+
+    function setText(el, text) { if (el) el.innerText = text; }
+    function setHTML(el, html) { if (el) el.innerHTML = html; }
+    function setLoading(isLoading) { if (loadingDiv) loadingDiv.style.display = isLoading ? 'block' : 'none'; }
+
+    function stopAutoRefresh() { if (refreshTimer) clearInterval(refreshTimer); refreshTimer = null; }
+    function startAutoRefresh(city) { stopAutoRefresh(); refreshTimer = setInterval(function() { fetchWeatherData(city, true); }, REFRESH_INTERVAL_MS); }
+
+    function stopClock() { if (animationId) cancelAnimationFrame(animationId); animationId = null; }
+    function startClock() { stopClock(); animationId = requestAnimationFrame(function updateClock() { if (timeDisplaySpan && currentOffset !== null) { var nowUtc = Date.now() / 1000; var localSec = nowUtc + currentOffset; var d = new Date(localSec * 1000); var h = d.getUTCHours(); var m = d.getUTCMinutes(); var s = d.getUTCSeconds(); var ampm = h >= 12 ? 'PM' : 'AM'; var hour12 = h % 12 || 12; var minStr = m < 10 ? '0' + m : m; var secStr = s < 10 ? '0' + s : s; timeDisplaySpan.innerText = hour12 + ':' + minStr + ':' + secStr + ' ' + ampm; } animationId = requestAnimationFrame(updateClock); }); }
+
+    function formatForecastTime(utcTs, offset) { var localSec = utcTs + offset; var d = new Date(localSec * 1000); var h = d.getUTCHours(); var m = d.getUTCMinutes(); var ampm = h >= 12 ? 'PM' : 'AM'; var hour12 = h % 12 || 12; var minStr = m < 10 ? '0' + m : m; return hour12 + ':' + minStr + ' ' + ampm; }
+
+    function updateCurrentUI(data) {
+      if (!data) return;
+      var temp = Math.round(data.main.temp), minT = Math.round(data.main.temp_min), maxT = Math.round(data.main.temp_max), feels = Math.round(data.main.feels_like), hum = data.main.humidity, windMs = data.wind.speed, windKmh = (windMs * 3.6).toFixed(1), vis = (data.visibility / 1000).toFixed(1), off = data.timezone;
+      setText(cityDisplay, data.name + ', ' + data.sys.country);
+      setText(mainTempEl, temp + '°C');
+      setHTML(highLowBlock, '<span><i class="fas fa-arrow-up"></i> ' + maxT + '°</span><span><i class="fas fa-arrow-down"></i> ' + minT + '°</span>');
+      setHTML(feelsLikeNote, '<i class="fas fa-thermometer-half"></i> Feels like ' + feels + '°');
+      setHTML(realTempEl, temp + '<span class="unit-sub">°C</span>');
+      setHTML(windSpeedEl, windKmh + '<span class="unit-sub"> Km/h</span>');
+      setHTML(humidityEl, hum + '<span class="unit-sub">%</span>');
+      setHTML(visibilityNote, '<i class="fas fa-eye"></i> Visibility: ' + vis + ' km');
+      setHTML(uvNote, '<i class="fas fa-umbrella"></i> UV: --');
+      if (off !== undefined && off !== currentOffset) { currentOffset = off; startClock(); }
+    }
+
+    function updateForecastUI(data) {
+      if (!data || !data.list || data.list.length === 0) { setHTML(hourlyContainer, '<div class="hour-item">Unavailable</div>'); setHTML(rainChanceEl, '0<span class="unit-sub">%</span>'); return; }
+      var rain = Math.round((data.list[0].pop || 0) * 100);
+      setHTML(rainChanceEl, rain + '<span class="unit-sub">%</span>');
+      if (data.list.length >= 4 && hourlyContainer) {
+        hourlyContainer.innerHTML = '';
+        for (var i = 0; i < 4; i++) {
+          var item = data.list[i];
+          var t = Math.round(item.main.temp);
+          var tm = formatForecastTime(item.dt, currentOffset !== null ? currentOffset : 0);
+          var hour = new Date(item.dt * 1000).getUTCHours();
+          var icon = (hour >= 6 && hour < 18) ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+          var div = document.createElement('div');
+          div.className = 'hour-item';
+          div.innerHTML = '<div class="hour-time">' + tm + '</div><div class="hour-temp">' + icon + ' ' + t + '<span>°C</span></div>';
+          hourlyContainer.appendChild(div);
+        }
+      } else setHTML(hourlyContainer, '<div class="hour-item">Insufficient data</div>');
+    }
+
+    function showError(msg) {
+      setText(cityDisplay, "⚠️ Error");
+      setText(mainTempEl, "--°C");
+      setHTML(highLowBlock, '<span><i class="fas fa-arrow-up"></i> --°</span><span><i class="fas fa-arrow-down"></i> --°</span>');
+      setHTML(feelsLikeNote, '<i class="fas fa-thermometer-half"></i> Feels like --°');
+      setHTML(realTempEl, '--<span class="unit-sub">°C</span>');
+      setHTML(rainChanceEl, '--<span class="unit-sub">%</span>');
+      setHTML(windSpeedEl, '--<span class="unit-sub"> Km/h</span>');
+      setHTML(humidityEl, '--<span class="unit-sub">%</span>');
+      setHTML(hourlyContainer, '<div class="hour-item">' + msg + '</div>');
+      if (timeDisplaySpan) timeDisplaySpan.innerText = "--:--:--";
+      setHTML(uvNote, '<i class="fas fa-umbrella"></i> UV: --');
+      setHTML(visibilityNote, '<i class="fas fa-eye"></i> Visibility: -- km');
+    }
+
+    function fetchWeatherData(city, silent) {
+      if (!city || city.trim() === "") { if (!silent) showError("Enter city"); return; }
+      if (!silent) setLoading(true);
+      var enc = encodeURIComponent(city.trim());
+      var wUrl = WEATHER_URL + '?q=' + enc + '&appid=' + API_KEY + '&units=metric';
+      var fUrl = FORECAST_URL + '?q=' + enc + '&appid=' + API_KEY + '&units=metric';
+      var wDone = false, fDone = false, wData = null;
+      function finish() { if (wDone && fDone && !silent) setLoading(false); }
+      function makeReq(url, onSuccess, onError) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 8000;
+        xhr.onload = function() {
+          if (xhr.status === 200) { try { var d = JSON.parse(xhr.responseText); onSuccess(d); } catch(e) { onError(); } }
+          else onError();
+        };
+        xhr.onerror = onError;
+        xhr.ontimeout = onError;
+        xhr.send();
+      }
+      makeReq(wUrl, function(d) { wData = d; updateCurrentUI(wData); wDone = true; finish(); }, function() { if (!silent) showError("Weather error"); wDone = true; fDone = true; if (!silent) setLoading(false); });
+      makeReq(fUrl, function(d) { updateForecastUI(d); fDone = true; finish(); }, function() { fDone = true; if (wData) updateForecastUI(null); finish(); });
+    }
+
+    function handleSearch() { var q = cityInput ? cityInput.value.trim() : ""; if (q === "") { showError("Enter city"); return; } currentCityName = q; stopAutoRefresh(); fetchWeatherData(currentCityName, false); startAutoRefresh(currentCityName); }
+
+    if (searchBtn) searchBtn.addEventListener('click', handleSearch);
+    if (cityInput) cityInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleSearch(); });
+
+    startClock();
+    fetchWeatherData("New York", false);
+    startAutoRefresh("New York");
+  })();
+</script>
+</body>
+</html>
